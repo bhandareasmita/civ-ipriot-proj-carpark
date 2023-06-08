@@ -40,9 +40,7 @@ if __name__ == '__main__':
               'topic-qualifier': 'sensor'
              }
 
-
     sensor1 = Sensor(config1)
-
 
     print("Sensor initialized")
     sensor1.start_sensing()

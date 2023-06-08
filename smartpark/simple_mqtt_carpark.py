@@ -51,14 +51,15 @@ class CarPark(mqtt_device.MqttDevice):
         self._publish_event()
 
 
-
     def on_car_exit(self):
         self.total_cars -= 1
         self._publish_event()
 
     def on_message(self, client, userdata, msg: MQTTMessage):
         payload = msg.payload.decode()
-        temp = payload.strip().split()[1]
+        msg = payload.strip()
+        temp = msg.split()
+        temperature = temp[1]
 
         self.temperature = temp
         if 'exit' in payload:
