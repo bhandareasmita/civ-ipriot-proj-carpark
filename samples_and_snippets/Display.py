@@ -8,6 +8,9 @@ import threading
 import time
 import tkinter as tk
 from typing import Iterable
+import paho.mqtt.client as paho
+import json
+import configparser
 
 # ------------------------------------------------------------------------------------#
 # You don't need to understand how to implement this class, just how to use it.       #
@@ -79,12 +82,20 @@ class CarParkDisplay:
     def __init__(self):
         self.window = WindowedDisplay(
             'Moondalup', CarParkDisplay.fields)
+        self.config = self.load_config()
         updater = threading.Thread(target=self.check_updates)
         updater.daemon = True
         updater.start()
         self.window.show()
 
+    def load_config(self):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        return config
+
+
     def check_updates(self):
+
         # TODO: This is where you should manage the MQTT subscription
         while True:
             # NOTE: Dictionary keys *must* be the same as the class fields
@@ -97,35 +108,17 @@ class CarParkDisplay:
             # When you get an update, refresh the display.
             self.window.update(field_values)
 
+    def on_message(client, userdata, msg):
+        print(f'Received {msg.payload.decode()}')
 
-class CarDetector:
-    """Provides a couple of simple buttons that can be used to represent a sensor detecting a car. This is a skeleton only."""
-
-    def __init__(self):
-        self.root = tk.Tk()
-        self.root.title("Car Detector ULTRA")
-
-        self.btn_incoming_car = tk.Button(
-            self.root, text='🚘 Incoming Car', font=('Arial', 50), cursor='right_side', command=self.incoming_car)
-        self.btn_incoming_car.pack(padx=10, pady=5)
-        self.btn_outgoing_car = tk.Button(
-            self.root, text='Outgoing Car 🚘',  font=('Arial', 50), cursor='bottom_left_corner', command=self.outgoing_car)
-        self.btn_outgoing_car.pack(padx=10, pady=5)
-
-        self.root.mainloop()
-
-    def incoming_car(self):
-        # TODO: implement this method to publish the detection via MQTT
-        print("Car goes in")
-
-    def outgoing_car(self):
-        # TODO: implement this method to publish the detection via MQTT
-        print("Car goes out")
+    client = paho.Client()
+    client.on_message = on_message
+    client.connect('localhost', 1883)
+    client.subscribe("display")
+    client.loop_forever()
 
 
 if __name__ == '__main__':
-    # TODO: Run each of these classes in a separate terminal. You should see the CarParkDisplay update when you click the buttons in the CarDetector.
-    # These classes are not designed to be used in the same module - they are both blocking. If you uncomment one, comment-out the other.
 
     CarParkDisplay()
-    # CarDetector()
+
