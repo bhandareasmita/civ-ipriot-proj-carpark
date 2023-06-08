@@ -1,8 +1,8 @@
 """"Demonstrates a simple implementation of an 'event' listener that triggers
 a publication via mqtt"""
 import random
-
 import mqtt_device
+import config_parser
 
 
 class Sensor(mqtt_device.MqttDevice):
@@ -10,10 +10,11 @@ class Sensor(mqtt_device.MqttDevice):
     @property
     def temperature(self):
         """Returns the current temperature"""
-        return random.randint(10, 35) 
+        return random.randint(10, 35)
 
     def on_detection(self, message):
         """Triggered when a detection occurs"""
+
         self.client.publish('sensor', message)
 
     def start_sensing(self):
@@ -24,6 +25,7 @@ class Sensor(mqtt_device.MqttDevice):
             print("Press X when 🚖 exited!")
             detection = input("E or X> ").upper()
             if detection == 'E':
+
                 self.on_detection(f"entered, {self.temperature}")
             else:
                 self.on_detection(f"exited, {self.temperature}")
@@ -35,8 +37,9 @@ if __name__ == '__main__':
               'topic-root': "lot",
               'broker': 'localhost',
               'port': 1883,
-              }
-    # TODO: Read previous config from file instead of embedding
+              'topic-qualifier': 'sensor'
+             }
+
 
     sensor1 = Sensor(config1)
 
@@ -44,5 +47,4 @@ if __name__ == '__main__':
     print("Sensor initialized")
     sensor1.start_sensing()
 
-    sensor1.start_sensing()
 
